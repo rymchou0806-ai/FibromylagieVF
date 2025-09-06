@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<!-- saved from url=(0037)http://127.0.0.1:5500/fibroquest.html -->
+<html lang="fr">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FibroQuest : le défi du Tonmya</title>
+    <style>
+      :root {
+        --bg1: #0b1020;
+        --bg2: #11183a;
+        --card: rgba(255, 255, 255, 0.08);
+        --border: rgba(255, 255, 255, 0.15);
+        --muted: #9aa3b2;
+        --text: #ffffff;
+        --brand: #5658ca;
+        --brand-2: #1a1133;
+        --danger: #ef4444;
+        --ok: #10b981;
+        --warn: #f59e0b;
+      }
+      * {
+        box-sizing: border-box;
+        /* Fond bleu en dégradé */
+        body {
+          height: 100%;
+          margin: 0;
+          background: linear-gradient(
+            135deg,
+            #0b1020,
+            #11183a
+          ); /* fond bleu sombre */
+          color: #e7e9ee;
+          font: 500 16px/1.45 ui-sans-serif, system-ui, -apple-system, Segoe UI,
+            Roboto, Inter, Helvetica, Arial;
+        }
+
+        /* Grille blanche transparente */
+        .gridbg {
+          pointer-events: none;
+          position: fixed;
+          inset: 0;
+          opacity: 0.08; /* transparence légère */
+        }
+        .gridbg svg {
+          width: 100%;
+          height: 100%;
+        }
+        .gridbg svg path {
+          stroke: white;
+          stroke-width: 1;
+        }
+      }
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        background: linear-gradient(135deg, var(--bg1), var(--bg2));
+        color: var(--text);
+        font: 500 16px/1.45 ui-sans-serif, system-ui, -apple-system, Segoe UI,
+          Roboto, Inter, Helvetica, Arial;
+      }
+      .wrap {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 28px;
+      }
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+        margin-bottom: 16px;
+      }
+      .btn {
+        padding: 10px 14px;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        margin: 4px;
+      }
+      .btn.primary {
+        background: var(--brand);
+        color: #fff;
+      }
+      .btn.danger {
+        background: var(--danger);
+        color: #fff;
+      }
+      .btn.ghost {
+        background: transparent;
+        color: #fff;
+        border: 1px solid var(--border);
+      }
+      .btn[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .hint {
+        font-size: 13px;
+        color: #aaa;
+        margin-top: 6px;
+      }
+      .list {
+        display: grid;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .chip {
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.05);
+        cursor: pointer;
+      }
+      .chip:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .chip.success {
+        background: rgba(16, 185, 129, 0.2);
+        border-color: rgba(16, 185, 129, 0.5);
+      }
+      .chip.fail {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: rgba(239, 68, 68, 0.5);
+      }
+      .scoreboard {
+        float: right;
+      }
+      .viz {
+        height: 200px;
+        background: #0f152c;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 10px;
+      }
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 14px;
+        background: #0b1225;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        display: none;
+      }
+      .toast.show {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="gridbg" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path
+              d="M40 0H0v40"
+              fill="none"
+              stroke="white"
+              stroke-width="1"
+            ></path>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#g)"></rect>
+      </svg>
+    </div>
+
+    <div class="wrap">
+      <header>
+        <h1>FibroQuest : le défi du Tonmya</h1>
+        <div class="scoreboard">Score : <span id="score">0</span> pts</div>
+      </header>
+
+      <!-- Step0 : Accueil -->
+      <div id="step0" class="card">
+        <div class="title">Bienvenue !</div>
+        <p class="muted">
+          « Bonjour pharmacien(ne), je souffre de douleurs diffuses depuis des
+          années. Les médecins disent que c’est de la fibromyalgie. Peux-tu
+          m’aider à comprendre et trouver le traitement qui me correspond ? »
+        </p>
+        <div class="subtitle">Veuillez entrer vos informations :</div>
+        <div class="list">
+          <input type="text" id="prenom" placeholder="Prénom" />
+          <input type="text" id="nom" placeholder="Nom" />
+        </div>
+        <div class="viz">
+          <img
+            src="./fibroquest_files/N0.jpg"
+            alt="Illustration"
+            style="
+              width: 100%;
+              height: 100%;
+              object-fit: auto;
+              border-radius: 8px;
+            "
+          />
+        </div>
+        <button class="btn primary" id="startBtn">Je suis prêt</button>
+      </div>
+
+      <!-- Niveau 1 Explication -->
+      <div id="level1intro" class="card" hidden="">
+        <div class="title">Niveau 1 : Comprendre la fibromyalgie</div>
+        <div class="viz">
+          <img
+            src="./fibroquest_files/N1.jpg"
+            alt="Illustration"
+            style="
+              width: 100%;
+              height: 100%;
+              object-fit: auto;
+              border-radius: 8px;
+            "
+          />
+        </div>
+        <button class="btn primary" id="readyL1">
+          Je suis prêt pour le quiz
+        </button>
+      </div>
+
+      <!-- Niveau 1 Quiz Questions -->
+      <div id="level1quiz" class="card" hidden="">
+        <div class="title" id="qTitle">
+          La fibromyalgie touche principalement ?
+        </div>
+        <div class="list" id="qOptions">
+          <label class="chip"
+            ><input type="radio" name="option" value="0" /> Enfants</label
+          ><label class="chip"
+            ><input type="radio" name="option" value="1" /> Adolescents</label
+          ><label class="chip"
+            ><input type="radio" name="option" value="2" /> Adultes</label
+          ><label class="chip"
+            ><input type="radio" name="option" value="3" /> Personnes
+            âgées</label
+          >
+        </div>
+        <button class="btn primary" id="validateBtn" disabled="">
+          Valider
+        </button>
+        <button class="btn ghost" id="skipBtn">Passer</button>
+        <div class="hint" id="feedback"></div>
+      </div>
+
+      <!-- Niveau 2 Explication -->
+      <div id="level2intro" class="card" hidden="">
+        <div class="title">Niveau 2 : Les Opioïdes</div>
+        <div class="viz">
+          <img
+            src="./fibroquest_files/N2.jpg"
+            alt="Illustration"
+            style="
+              width: 100%;
+              height: 100%;
+              object-fit: auto;
+              border-radius: 8px;
+            "
+          />
+        </div>
+        <button class="btn primary" id="readyL2">
+          Je suis prêt pour le quiz
+        </button>
+      </div>
+
+      <!-- Niveau 2 Quiz Questions -->
+      <div id="level2quiz" class="card" hidden="">
+        <div class="title" id="qTitle2">Fentanyl est</div>
+        <div class="list" id="qOptions2">
+          <label class="chip"
+            ><input type="radio" name="option" value="0" /> Oral</label
+          ><label class="chip"
+            ><input type="radio" name="option" value="1" /> Transdermique</label
+          ><label class="chip"
+            ><input type="radio" name="option" value="2" /> Intraveineux</label
+          ><label class="chip"
+            ><input type="radio" name="option" value="3" /> Tous les
+            modes</label
+          >
+        </div>
+        <button class="btn primary" id="validateBtn2" disabled="">
+          Valider
+        </button>
+        <button class="btn ghost" id="skipBtn2">Passer</button>
+        <div class="hint" id="feedback2"></div>
+      </div>
+
+      <!-- Niveau 3 Explication -->
+      <div id="level3intro" class="card" hidden="">
+        <div class="title">Niveau 3 : Innovation Tonmya</div>
+        <div class="viz">
+          <img
+            src="./fibroquest_files/N3.jpg"
+            alt="Illustration"
+            style="
+              width: 100%;
+              height: 100%;
+              object-fit: auto;
+              border-radius: 8px;
+            "
+          />
+        </div>
+        <button class="btn primary" id="readyL3">
+          Je suis prêt pour le quiz
+        </button>
+      </div>
+
+      <!-- Niveau 3 Quiz Questions -->
+      <div id="level3quiz" class="card" hidden="">
+        <div class="title" id="qTitle3">Inhiber Kv7 ?</div>
+        <div class="list" id="qOptions3">
+          <label class="chip"
+            ><input type="radio" name="option" value="0" /> Diminue
+            excitabilité</label
+          ><label class="chip"
+            ><input type="radio" name="option" value="1" /> Augmente
+            excitabilité</label
+          ><label class="chip"
+            ><input type="radio" name="option" value="2" /> Bloque
+            douleur</label
+          ><label class="chip"
+            ><input type="radio" name="option" value="3" /> Aucune</label
+          >
+        </div>
+        <button class="btn primary" id="validateBtn3" disabled="">
+          Valider
+        </button>
+        <button class="btn ghost" id="skipBtn3">Passer</button>
+        <div class="hint" id="feedback3"></div>
+      </div>
+
+      <!-- Résultat -->
+      <div id="result" class="card" hidden>
+        <div class="title">Bravo 🎉</div>
+        <div class="subtitle">Tableau de score :</div>
+        <div class="list" id="finalStats"></div>
+        <button class="btn primary" id="restartBtn">Rejouer</button>
+        <script>
+          document.addEventListener("DOMContentLoaded", () => {
+            const restartBtn = document.getElementById("restartBtn");
+
+            if (restartBtn) {
+              restartBtn.addEventListener("click", () => {
+                console.log("Bouton Rejouer cliqué !");
+                // Recharge complètement la page
+                window.location.reload();
+              });
+            } else {
+              console.error("⚠️ Bouton Rejouer introuvable !");
+            }
+          });
+        </script>
+      </div>
+    </div>
+    <div id="toast" class="toast">
+      Erreur réseau : impossible d'enregistrer le score
+    </div>
+
+    <script>
+      // --- State ---
+      let score = 0;
+      let player = {};
+      let qIndex = 0;
+      const scoreEl = document.getElementById("score");
+      const toastEl = document.getElementById("toast");
+
+      // --- Questions ---
+      const level1Q = [
+        {
+          q: "Quel symptôme n’est pas typique ?",
+          options: [
+            "Douleur généralisée",
+            "Fatigue extrême",
+            "Fièvre persistante",
+            "Fibro-fog",
+          ],
+          answer: 2,
+        },
+        {
+          q: "La fibromyalgie est-elle une maladie inflammatoire ?",
+          options: ["Oui", "Non", "Parfois", "Je ne sais pas"],
+          answer: 1,
+        },
+        {
+          q: "Quel traitement est le plus utilisé ?",
+          options: ["Opioïdes", "Exercice", "Antibiotiques", "Chirurgie"],
+          answer: 1,
+        },
+        {
+          q: "Le fibro-fog correspond à ?",
+          options: [
+            "Trouble de la mémoire",
+            "Douleur localisée",
+            "Inflammation",
+            "Fatigue",
+          ],
+          answer: 0,
+        },
+        {
+          q: "La fibromyalgie touche principalement ?",
+          options: ["Enfants", "Adolescents", "Adultes", "Personnes âgées"],
+          answer: 2,
+        },
+      ];
+
+      const level2Q = [
+        {
+          q: "Quel opioïde est le plus puissant ?",
+          options: ["Codéine", "Morphine", "Fentanyl", "Paracétamol"],
+          answer: 2,
+        },
+        {
+          q: "Opioïdes pour fibromyalgie ?",
+          options: ["Toujours", "Jamais", "Selon le cas", "Automatique"],
+          answer: 2,
+        },
+        {
+          q: "Effet secondaire majeur ?",
+          options: ["Somnolence", "Fièvre", "Toux", "Éternuement"],
+          answer: 0,
+        },
+        {
+          q: "Morphine pour patient fragile ?",
+          options: ["Oui", "Non", "Parfois", "Toujours"],
+          answer: 1,
+        },
+        {
+          q: "Fentanyl est",
+          options: ["Oral", "Transdermique", "Intraveineux", "Tous les modes"],
+          answer: 3,
+        },
+      ];
+
+      const level3Q = [
+        {
+          q: "Kv7 est un canal ?",
+          options: ["Sodium", "Potassium", "Calcium", "Chlorure"],
+          answer: 1,
+        },
+        {
+          q: "Activation Kv7 ?",
+          options: [
+            "Hyperpolarisation",
+            "Dépolarisation",
+            "Inflammation",
+            "Douleur",
+          ],
+          answer: 0,
+        },
+        {
+          q: "Tonmya agit sur ?",
+          options: [
+            "Canaux ioniques",
+            "Fibres musculaires",
+            "Artères",
+            "Veines",
+          ],
+          answer: 0,
+        },
+        {
+          q: "Kv7 régule ?",
+          options: [
+            "Tension artérielle",
+            "Excitabilité neuronale",
+            "Douleur",
+            "Cholestérol",
+          ],
+          answer: 1,
+        },
+        {
+          q: "Inhiber Kv7 ?",
+          options: [
+            "Diminue excitabilité",
+            "Augmente excitabilité",
+            "Bloque douleur",
+            "Aucune",
+          ],
+          answer: 1,
+        },
+      ];
+
+      // --- Helpers ---
+      function setStep(id) {
+        [
+          "step0",
+          "level1intro",
+          "level1quiz",
+          "level2intro",
+          "level2quiz",
+          "level3intro",
+          "level3quiz",
+          "result",
+        ].forEach((s) => (document.getElementById(s).hidden = s !== id));
+      }
+      function addScore(n) {
+        score += n;
+        scoreEl.textContent = score;
+      }
+      function toast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        setTimeout(() => toastEl.classList.remove("show"), 1800);
+      }
+
+      // --- Accueil ---
+      document.getElementById("startBtn").addEventListener("click", () => {
+        const prenom = document.getElementById("prenom").value.trim();
+        const nom = document.getElementById("nom").value.trim();
+        if (!prenom || !nom) {
+          toast("Remplis tes infos");
+          return;
+        }
+        player = { prenom, nom };
+        setStep("level1intro");
+      });
+
+      // --- Level 1 Intro ---
+      document.getElementById("readyL1").addEventListener("click", () => {
+        qIndex = 0;
+        loadQuestion(
+          level1Q,
+          "level1quiz",
+          "qTitle",
+          "qOptions",
+          "validateBtn",
+          "feedback"
+        );
+      });
+
+      // --- Level 2 Intro ---
+      document.getElementById("readyL2").addEventListener("click", () => {
+        qIndex = 0;
+        loadQuestion(
+          level2Q,
+          "level2quiz",
+          "qTitle2",
+          "qOptions2",
+          "validateBtn2",
+          "feedback2"
+        );
+      });
+
+      // --- Level 3 Intro ---
+      document.getElementById("readyL3").addEventListener("click", () => {
+        qIndex = 0;
+        loadQuestion(
+          level3Q,
+          "level3quiz",
+          "qTitle3",
+          "qOptions3",
+          "validateBtn3",
+          "feedback3"
+        );
+      });
+
+      // --- Load Question Function ---
+      function loadQuestion(
+        questions,
+        quizId,
+        titleId,
+        optionsId,
+        validateId,
+        feedbackId
+      ) {
+        setStep(quizId);
+        const q = questions[qIndex];
+        document.getElementById(titleId).textContent = q.q;
+        const optionsDiv = document.getElementById(optionsId);
+        optionsDiv.innerHTML = "";
+        q.options.forEach((opt, i) => {
+          const label = document.createElement("label");
+          label.className = "chip";
+          label.innerHTML = `<input type="radio" name="option" value="${i}"/> ${opt}`;
+          optionsDiv.appendChild(label);
+        });
+        const validateBtn = document.getElementById(validateId);
+        const feedback = document.getElementById(feedbackId);
+        validateBtn.disabled = true;
+        feedback.textContent = "";
+        optionsDiv.querySelectorAll('input[name="option"]').forEach((r) => {
+          r.addEventListener("change", () => (validateBtn.disabled = false));
+        });
+
+        // Valider
+        validateBtn.onclick = () => {
+          const val = parseInt(
+            document.querySelector(`#${optionsId} input[name="option"]:checked`)
+              .value
+          );
+          if (val === q.answer) {
+            feedback.textContent = "✅ Correct !";
+            feedback.style.color = "#10b981";
+            addScore(5);
+          } else {
+            feedback.textContent = "❌ Faux !";
+            feedback.style.color = "#ef4444";
+          }
+          setTimeout(nextQuestion, 800);
+        };
+
+        // Passer
+        let skipBtnId =
+          quizId === "level1quiz"
+            ? "skipBtn"
+            : quizId === "level2quiz"
+            ? "skipBtn2"
+            : "skipBtn3";
+        document.getElementById(skipBtnId).onclick = nextQuestion;
+
+        function nextQuestion() {
+          qIndex++;
+          if (qIndex < questions.length)
+            loadQuestion(
+              questions,
+              quizId,
+              titleId,
+              optionsId,
+              validateId,
+              feedbackId
+            );
+          else {
+            if (quizId === "level1quiz") setStep("level2intro");
+            else if (quizId === "level2quiz") setStep("level3intro");
+            else if (quizId === "level3quiz") {
+              setStep("result");
+              saveResult();
+            }
+          }
+        }
+      }
+    </script>
+    <script type="module">
+      import { addScore, getScores } from "./supabase.js";
+      // ⚠️ vérifie bien le chemin ! Si ton fichier est dans ./ASEPA/supabase.js, change ici.
+
+      // Fonction pour afficher un message (toast ou alert)
+      function showToast(message) {
+        const toast = document.getElementById("toast");
+        if (toast) {
+          toast.textContent = message;
+          toast.classList.add("show");
+          setTimeout(() => toast.classList.remove("show"), 2000);
+        } else {
+          alert(message);
+        }
+      }
+
+      // Fonction pour sauvegarder le score
+      async function saveResult(player) {
+        try {
+          await addScore(player.nom, player.prenom, player.score);
+          await loadScores();
+          showToast("Score envoyé !");
+        } catch (error) {
+          console.error("Erreur saveResult:", error);
+          showToast("Erreur : impossible d'enregistrer le score");
+        }
+      }
+
+      // Fonction pour charger et afficher les scores
+      async function loadScores() {
+        try {
+          const results = await getScores();
+          const finalDiv = document.getElementById("finalStats");
+
+          if (finalDiv) {
+            finalDiv.innerHTML = results
+              .map((r) => `<div>${r.prenom} ${r.nom} : ${r.score} pts</div>`)
+              .join("");
+          }
+        } catch (error) {
+          console.error("Erreur loadScores:", error);
+          showToast("Erreur : impossible de charger les scores");
+        }
+      }
+
+      // Rendre accessibles dans le HTML
+      window.saveResult = saveResult;
+      window.loadScores = loadScores;
+    </script>
+  </body>
+</html>
